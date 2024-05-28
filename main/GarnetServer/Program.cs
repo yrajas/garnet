@@ -24,7 +24,22 @@ namespace Garnet
                 // Start the server
                 server.Start();
 
-                Thread.Sleep(Timeout.Infinite);
+                while (true)
+                {
+                    Thread.Sleep(TimeSpan.FromSeconds(5));
+
+                    // Check if the environment variable is set to 1
+                    string myVariableValue = Environment.GetEnvironmentVariable("STOP_GARNET", EnvironmentVariableTarget.Machine);
+                    if (myVariableValue == "1")
+                    {
+                        // Perform the desired action when the environment variable is set to 1
+                        Console.WriteLine("Environment variable STOP_GARNET is set to 1.");
+                        break;
+                    }
+                    else
+                        Console.WriteLine($"Environment variable STOP_GARNET is set to {myVariableValue}.");
+                }
+                //Thread.Sleep(Timeout.Infinite);
             }
             catch (Exception ex)
             {
