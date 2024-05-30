@@ -26,7 +26,7 @@ namespace Garnet
 
                 while (true)
                 {
-                    Thread.Sleep(TimeSpan.FromSeconds(5));
+                    Thread.Sleep(TimeSpan.FromSeconds(15));
 
                     // Check if the environment variable is set to 1
                     string myVariableValue = Environment.GetEnvironmentVariable("STOP_GARNET", EnvironmentVariableTarget.Machine);
