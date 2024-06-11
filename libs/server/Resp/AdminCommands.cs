@@ -5,7 +5,6 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Garnet.common;
 using Garnet.server.ACL;
@@ -521,6 +520,8 @@ namespace Garnet.server
 
                 if (!errorFlag)
                 {
+                    GC.Collect(generation, GCCollectionMode.Forced, true);
+                    GC.WaitForPendingFinalizers();
                     GC.Collect(generation, GCCollectionMode.Forced, true);
                     while (!RespWriteUtils.WriteSimpleString("GC completed"u8, ref dcurr, dend))
                         SendAndReset();
