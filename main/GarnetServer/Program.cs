@@ -36,8 +36,8 @@ namespace Garnet
                         Console.WriteLine("Environment variable STOP_GARNET is set to 1.");
                         break;
                     }
-                    else
-                        Console.WriteLine($"Environment variable STOP_GARNET is set to {myVariableValue}.");
+                    //else
+                    //    Console.WriteLine($"Environment variable STOP_GARNET is set to {myVariableValue}.");
                 }
                 //Thread.Sleep(Timeout.Infinite);
             }
