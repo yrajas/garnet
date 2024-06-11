@@ -951,9 +951,6 @@ namespace Garnet.server
             }
             else
             {
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-                GC.Collect();
                 while (!RespWriteUtils.WriteDirect(CmdStrings.RESP_PONG, ref dcurr, dend))
                     SendAndReset();
             }
