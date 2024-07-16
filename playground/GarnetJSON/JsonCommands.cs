@@ -26,10 +26,10 @@ namespace GarnetJSON
             Debug.Assert(jsonObject is JsonObject);
 
             int offset = 0;
-            var path = CustomCommandUtils.GetNextArg(input, ref offset).ToString();
-            var value = CustomCommandUtils.GetNextArg(input, ref offset).ToString();
+            var path = CustomCommandUtils.GetNextArg(input, ref offset);
+            var value = CustomCommandUtils.GetNextArg(input, ref offset);
 
-            ((JsonObject)jsonObject).Set(path, value);
+            ((JsonObject)jsonObject).Set(Encoding.UTF8.GetString(path), Encoding.UTF8.GetString(value));
             return true;
         }
     }
@@ -46,9 +46,9 @@ namespace GarnetJSON
             Debug.Assert(value is JsonObject);
 
             int offset = 0;
-            var path = CustomCommandUtils.GetNextArg(input, ref offset).ToString();
+            var path = CustomCommandUtils.GetNextArg(input, ref offset);
 
-            var result = ((JsonObject)value).Get(path);
+            var result = ((JsonObject)value).Get(Encoding.UTF8.GetString(path));
             CustomCommandUtils.WriteBulkString(ref output, Encoding.UTF8.GetBytes(result));
             return true;
         }
