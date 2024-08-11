@@ -59,6 +59,14 @@ namespace BDN.benchmark.Resp
         byte[] myDictSetGetRequestBuffer;
         byte* myDictSetGetRequestBufferPointer;
 
+        static ReadOnlySpan<byte> INCR => "*2\r\n$4\r\nINCR\r\n$1\r\na\r\n"u8;
+        byte[] incrRequestBuffer;
+        byte* incrRequestBufferPointer;
+
+        static ReadOnlySpan<byte> MYINCR => "*2\r\n$6\r\nMYINCR\r\n$1\r\nb\r\n"u8;
+        byte[] myincrRequestBuffer;
+        byte* myincrRequestBufferPointer;
+
         [GlobalSetup]
         public void GlobalSetup()
         {
@@ -140,6 +148,16 @@ namespace BDN.benchmark.Resp
 
             // Pre-populate custom object
             SlowConsumeMessage("*4\r\n$9\r\nMYDICTSET\r\n$2\r\nck\r\n$1\r\nf\r\n$1\r\nv\r\n"u8);
+
+            incrRequestBuffer = GC.AllocateArray<byte>(INCR.Length * batchSize, pinned: true);
+            incrRequestBufferPointer = (byte*)Unsafe.AsPointer(ref incrRequestBuffer[0]);
+            for (int i = 0; i < batchSize; i++)
+                INCR.CopyTo(new Span<byte>(incrRequestBuffer).Slice(i * INCR.Length));
+
+            myincrRequestBuffer = GC.AllocateArray<byte>(MYINCR.Length * batchSize, pinned: true);
+            myincrRequestBufferPointer = (byte*)Unsafe.AsPointer(ref myincrRequestBuffer[0]);
+            for (int i = 0; i < batchSize; i++)
+                MYINCR.CopyTo(new Span<byte>(myincrRequestBuffer).Slice(i * MYINCR.Length));
         }
 
         [GlobalCleanup]
@@ -207,6 +225,18 @@ namespace BDN.benchmark.Resp
         public void MyDictSetGet()
         {
             _ = session.TryConsumeMessages(myDictSetGetRequestBufferPointer, myDictSetGetRequestBuffer.Length);
+        }
+
+        [Benchmark]
+        public void Incr()
+        {
+            _ = session.TryConsumeMessages(incrRequestBufferPointer, incrRequestBuffer.Length);
+        }
+
+        [Benchmark]
+        public void MyIncr()
+        {
+            _ = session.TryConsumeMessages(myincrRequestBufferPointer, myincrRequestBuffer.Length);
         }
 
         private void SlowConsumeMessage(ReadOnlySpan<byte> message)

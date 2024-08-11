@@ -59,6 +59,8 @@ namespace Garnet
             // Register custom command on raw strings (DELIFM = "delete if value matches")
             server.Register.NewCommand("DELIFM", CommandType.ReadModifyWrite, new DeleteIfMatchCustomCommand());
 
+            server.Register.NewCommand("MYINCR", CommandType.ReadModifyWrite, new CustomIncr());
+
             // Register custom commands on objects
             var factory = new MyDictFactory();
             server.Register.NewType(factory);
