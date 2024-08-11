@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Runtime.CompilerServices;
 using Garnet.server;
 using Tsavorite.core;
 
@@ -52,8 +53,10 @@ namespace Garnet
             dict = obj.dict;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override CustomObjectBase CloneObject() => new MyDict(this);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override void SerializeObject(BinaryWriter writer)
         {
             writer.Write(dict.Count);
@@ -132,6 +135,7 @@ namespace Garnet
                 cursor = 0;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Set(byte[] key, byte[] value)
         {
             if (dict.TryGetValue(key, out var oldValue))
@@ -144,6 +148,7 @@ namespace Garnet
             return true;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void UpdateSize(byte[] key, byte[] value, bool add = true)
         {
             var size = Utility.RoundUp(key.Length, IntPtr.Size) + Utility.RoundUp(value.Length, IntPtr.Size)
@@ -152,6 +157,7 @@ namespace Garnet
             Debug.Assert(this.Size >= MemoryUtils.DictionaryOverhead);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool TryGetValue(byte[] key, [MaybeNullWhen(false)] out byte[] value)
         {
             return dict.TryGetValue(key, out value);
