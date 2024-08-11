@@ -22,14 +22,28 @@ namespace Garnet
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override bool CopyUpdater(ReadOnlySpan<byte> key, ReadOnlySpan<byte> input, ReadOnlySpan<byte> oldValue, Span<byte> newValue, ref (IMemoryOwner<byte>, int) output, ref RMWInfo rmwInfo)
         {
-            var curr = NumUtils.BytesToLong(oldValue);
-            var next = curr + 1;
+            if (!IsValidNumber(oldValue, out var curr))
+            {
+                oldValue.CopyTo(newValue);
+                WriteInvalidType(ref output);
+                return true;
+            }
+
+            try
+            {
+                checked { curr++; }
+            }
+            catch
+            {
+                WriteInvalidType(ref output);
+                return true;
+            }
 
             var fNeg = false;
-            var ndigits = NumUtils.NumDigitsInLong(next, ref fNeg);
+            var ndigits = NumUtils.NumDigitsInLong(curr, ref fNeg);
             ndigits += fNeg ? 1 : 0;
 
-            _ = NumUtils.LongToSpanByte(next, newValue);
+            _ = NumUtils.LongToSpanByte(curr, newValue);
             WriteNumber(ref output, newValue);
             return true;
         }
@@ -65,20 +79,45 @@ namespace Garnet
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override bool InPlaceUpdater(ReadOnlySpan<byte> key, ReadOnlySpan<byte> input, Span<byte> value, ref int valueLength, ref (IMemoryOwner<byte>, int) output, ref RMWInfo rmwInfo)
         {
-            var curr = NumUtils.BytesToLong(value);
-            var next = curr + 1;
+            if (!IsValidNumber(value, out var curr))
+            {
+                WriteInvalidType(ref output);
+                return true;
+            }
+
+            try
+            {
+                checked { curr++; }
+            }
+            catch
+            {
+                WriteInvalidType(ref output);
+                return true;
+            }
 
             var fNeg = false;
-            var ndigits = NumUtils.NumDigitsInLong(next, ref fNeg);
+            var ndigits = NumUtils.NumDigitsInLong(curr, ref fNeg);
             ndigits += fNeg ? 1 : 0;
 
             if (ndigits > valueLength)
                 return false;
 
-            _ = NumUtils.LongToSpanByte(next, value);
+            _ = NumUtils.LongToSpanByte(curr, value);
             valueLength = ndigits;
             WriteNumber(ref output, value);
             return true;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static unsafe void WriteInvalidType(ref (IMemoryOwner<byte>, int) output)
+        {
+            output.Item1?.Dispose();
+            output.Item1 = MemoryPool.Rent(1);
+            output.Item2 = 1;
+            fixed (byte* ptr = output.Item1.Memory.Span)
+            {
+                *ptr = (byte)OperationError.INVALID_TYPE;
+            }
         }
 
         public override bool Reader(ReadOnlySpan<byte> key, ReadOnlySpan<byte> input, ReadOnlySpan<byte> value, ref (IMemoryOwner<byte>, int) output, ref ReadInfo readInfo) => throw new NotImplementedException();
@@ -104,6 +143,25 @@ namespace Garnet
                 curr++;
                 Debug.Assert(success, "Insufficient space in pre-allocated buffer");
             }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static bool IsValidNumber(ReadOnlySpan<byte> source, out long val)
+        {
+            val = 0;
+            try
+            {
+                // Check for valid number
+                if (!NumUtils.TryBytesToLong(source, out val))
+                {
+                    return false;
+                }
+            }
+            catch
+            {
+                return false;
+            }
+            return true;
         }
     }
 }
