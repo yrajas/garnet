@@ -59,10 +59,6 @@ namespace BDN.benchmark.Resp
         byte[] myDictSetGetRequestBuffer;
         byte* myDictSetGetRequestBufferPointer;
 
-        static ReadOnlySpan<byte> INCR => "*2\r\n$4\r\nINCR\r\n$1\r\na\r\n"u8;
-        byte[] incrRequestBuffer;
-        byte* incrRequestBufferPointer;
-
         static ReadOnlySpan<byte> MYINCR => "*2\r\n$6\r\nMYINCR\r\n$1\r\nb\r\n"u8;
         byte[] myincrRequestBuffer;
         byte* myincrRequestBufferPointer;
